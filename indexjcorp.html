@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yayasan JCorp – Project Monitoring & Impact Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f4;--card:#fff;--ink:#16252b;--mute:#5d6b70;--line:#dde2e0;--brand:#12414a;--edu:#2f5d8a;--her:#b8892b;--env:#3f7d58;--com:#7a4f8f;--ok:#2f7d4f;--warn:#b7791f;--crit:#b3362f}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10171a;--card:#182125;--ink:#e6ecea;--mute:#98a7ab;--line:#2a373b;--brand:#6fc0c9;--edu:#6c9bcb;--her:#d9ae52;--env:#6fb48a;--com:#b48ac6;--ok:#58b27c;--warn:#d9a24a;--crit:#e1706a}}
+*{box-sizing:border-box}html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3{font-family:"IBM Plex Serif",Georgia,serif;margin:0;font-weight:600}
+.app{display:flex;min-height:100vh}
+nav{width:236px;background:var(--brand);color:#fff;padding:18px 12px;flex-shrink:0;transition:width .2s;position:sticky;top:0;height:100vh;overflow:auto}
+nav.min{width:60px}nav.min .lbl,nav.min .brand span{display:none}
+.brand{display:flex;gap:10px;align-items:center;font-family:"IBM Plex Serif",serif;font-weight:600;padding:4px 8px 18px}
+.brand b{background:#fff;color:var(--brand);border-radius:6px;width:28px;height:28px;display:grid;place-items:center;flex-shrink:0}
+nav button{all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;width:100%;padding:9px 10px;border-radius:6px;cursor:pointer;color:#dbe8ea;margin-bottom:2px}
+nav button:hover,nav button.on{background:rgba(255,255,255,.14);color:#fff}
+nav button:focus-visible,.btn:focus-visible,select:focus-visible,tr[tabindex]:focus-visible{outline:2px solid var(--her);outline-offset:2px}
+nav .ic{width:20px;text-align:center}
+main{flex:1;min-width:0;padding:22px 28px 48px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.top h1{font-size:24px}.top p{margin:2px 0 0;color:var(--mute)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+select,.btn{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer}
+.btn.pri{background:var(--brand);color:#fff;border-color:var(--brand)}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h3{font-size:15px;margin-bottom:12px}
+.kpi small{color:var(--mute);display:block}.kpi b{font-size:26px;font-weight:600;display:block;margin-top:2px}.kpi i{font-style:normal;font-size:12px;color:var(--mute)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar>div{height:100%;border-radius:4px}
+.row{display:grid;grid-template-columns:130px 1fr 80px;gap:10px;align-items:center;margin:9px 0;font-size:13px}.row span:last-child{text-align:right;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--mute);font-weight:500;border-bottom:1px solid var(--line);padding:8px 6px}td{padding:9px 6px;border-bottom:1px solid var(--line)}
+tr[tabindex]{cursor:pointer}tr[tabindex]:hover td{background:rgba(127,150,150,.08)}
+.wrap{overflow-x:auto}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;border:1px solid currentColor}
+.s-Ongoing{color:var(--edu)}.s-Completed{color:var(--ok)}.s-Delayed{color:var(--crit)}.s-Planning{color:var(--mute)}.s-Approved{color:var(--warn)}.s-Suspended{color:var(--crit)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.donut{width:150px;height:150px;border-radius:50%;margin:auto;position:relative}.donut:after{content:"";position:absolute;inset:30px;background:var(--card);border-radius:50%}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;color:var(--mute);justify-content:center}
+.cols{display:flex;align-items:flex-end;gap:10px;height:170px;padding-top:8px}.cols>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--mute);gap:4px}.cols .pair{display:flex;gap:3px;align-items:flex-end;width:100%;justify-content:center;flex:1}.cols .pair i{width:42%;max-width:26px;border-radius:3px 3px 0 0;display:block}
+.map{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.st{border-radius:8px;padding:10px 6px;text-align:center;font-size:12px;border:1px solid var(--line);cursor:pointer;background:var(--card)}.st b{display:block;font-size:16px}.st.low{border-style:dashed}
+.alert{display:flex;gap:12px;padding:11px 12px;border-left:4px solid;background:var(--card);border-radius:0 8px 8px 0;margin-bottom:8px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.alert.critical{border-left-color:var(--crit)}.alert.warning{border-left-color:var(--warn)}.alert.normal{border-left-color:var(--ok)}
+.ms{display:flex;gap:0;margin:8px 0}.ms div{flex:1;text-align:center;font-size:12px;color:var(--mute)}.ms div:before{content:"";display:block;height:6px;background:var(--line);margin-bottom:6px}.ms .d:before{background:var(--ok)}.ms .n:before{background:var(--her)}
+.note{font-size:12px;color:var(--mute);margin-top:18px}.hide{display:none}
+@media(max-width:760px){nav{position:fixed;z-index:20;height:100%;transform:translateX(-100%)}nav.open{transform:none;width:236px}nav.min .lbl{display:inline}main{padding:16px}.map{grid-template-columns:repeat(4,1fr)}.row{grid-template-columns:100px 1fr 64px}}
+@media print{nav,.filters,.btn{display:none}main{padding:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="app">
+<nav id="nav" aria-label="Main"><div class="brand"><b>J</b><span>Yayasan JCorp</span></div><div id="menu"></div>
+<button onclick="nav.classList.toggle('min')" aria-label="Collapse sidebar"><span class="ic">«</span><span class="lbl">Collapse</span></button></nav>
+<main>
+<div class="top"><div><button class="btn" id="burger" style="display:none;margin-bottom:8px" onclick="nav.classList.toggle('open')">☰ Menu</button><h1 id="title"></h1><p id="sub"></p></div>
+<div class="filters" id="filters">
+<select id="fy" aria-label="Year"><option value="">All years</option><option>2024</option><option>2025</option><option>2026</option></select>
+<select id="fs" aria-label="Status"><option value="">All statuses</option><option>Planning</option><option>Approved</option><option>Ongoing</option><option>Completed</option><option>Delayed</option><option>Suspended</option></select>
+<select id="fp" aria-label="Pillar"><option value="">All pillars</option><option>Education</option><option>Heritage, Culture & Arts</option><option>Environment</option><option>Community Well-being</option></select>
+<select id="fl" aria-label="Location"><option value="">All locations</option></select></div></div>
+<div id="msg"></div><div id="view"></div>
+<p class="note">Data comes from the linked Google Sheet. Without a link, sample data is shown.</p>
+</main></div>
+<script>
+const P=["Education","Heritage, Culture & Arts","Environment","Community Well-being"],PC=["var(--edu)","var(--her)","var(--env)","var(--com)"];
+const pc=n=>PC[P.indexOf(n)];
+// id,name,pillar,state,district,status,year,budget(RM k),spent(RM k),target,actual,pct,manager,partners,start,end
+const R=[
+["JC-001","Bursari Anak Johor","Education","Johor","Kluang","Ongoing",2025,1800,1210,400,310,68,"Aisyah Rahman","Kementerian Pendidikan, UTM","2025-02","2026-12"],
+["JC-002","Sekolah Digital Pedalaman","Education","Sabah","Ranau","Delayed",2025,950,720,1200,640,48,"Daniel Lim","SK Ranau, Telekom","2025-04","2026-08"],
+["JC-003","Kemahiran TVET Belia","Education","Perak","Ipoh","Completed",2024,1200,1150,300,342,100,"Farid Hassan","Kolej Komuniti Ipoh","2024-01","2024-12"],
+["JC-004","Tuisyen Komuniti Kelantan","Education","Kelantan","Machang","Ongoing",2026,600,150,800,190,25,"Nurul Huda","PIBG Machang","2026-03","2027-02"],
+["JC-005","Pemuliharaan Rumah Warisan Melaka","Heritage, Culture & Arts","Melaka","Melaka Tengah","Ongoing",2025,1500,980,12000,7400,63,"Tan Mei Ling","Perbadanan Muzium","2025-05","2026-11"],
+["JC-006","Tenun Songket Terengganu","Heritage, Culture & Arts","Terengganu","Kuala Terengganu","Completed",2024,700,688,120,131,100,"Siti Zainab","Kraftangan Malaysia","2024-03","2025-01"],
+["JC-007","Festival Seni Kuching","Heritage, Culture & Arts","Sarawak","Kuching","Planning",2026,850,0,9000,0,5,"Jonathan Ak Ben","Dewan Seni Sarawak","2026-11","2027-05"],
+["JC-008","Arkib Lisan Penang","Heritage, Culture & Arts","Pulau Pinang","George Town","Delayed",2025,420,390,60,22,40,"Lee Wei Han","Penang Heritage Trust","2025-03","2026-06"],
+["JC-009","Tanam 50,000 Pokok","Environment","Pahang","Raub","Ongoing",2025,1100,640,50000,31000,58,"Ahmad Faiz","Jabatan Perhutanan","2025-06","2027-01"],
+["JC-010","Bank Kitar Semula Komuniti","Environment","Selangor","Klang","Completed",2024,480,455,2500,2870,100,"Priya Nair","MBPJ, Alam Flora","2024-02","2024-12"],
+["JC-011","Pemulihan Bakau Kuala Selangor","Environment","Selangor","Kuala Selangor","Ongoing",2026,900,310,35,12,34,"Hafiz Omar","MNS","2026-01","2027-03"],
+["JC-012","Terumbu Karang Sipadan","Environment","Sabah","Semporna","Approved",2026,1300,60,25,0,10,"Grace Wong","Sabah Parks","2026-10","2027-09"],
+["JC-013","Bantuan Banjir Pantai Timur","Community Well-being","Kelantan","Kuala Krai","Completed",2025,1600,1720,3000,3340,100,"Zulkifli Daud","NADMA, Mercy","2025-01","2025-06"],
+["JC-014","Klinik Bergerak Warga Emas","Community Well-being","Kedah","Baling","Ongoing",2025,1250,880,4000,2700,67,"Dr Rohana Ali","KKM, Hospital Baling","2025-03","2026-12"],
+["JC-015","Usahawan B40 Kota Kinabalu","Community Well-being","Sabah","Kota Kinabalu","Ongoing",2026,750,95,500,60,20,"Mary Gunsalam","AIM, SEDCO","2026-04","2027-04"],
+["JC-016","Rumah Mesra Orang Asli","Community Well-being","Perak","Gerik","Suspended",2024,2000,610,80,24,30,"Azman Yusof","JAKOA","2024-06","2026-05"]];
+// ===== SETTINGS: paste your published Google Sheet CSV link between the quotes =====
+const SHEET_URL="";
+// ===================================================================================
+const STAT=["Planning","Approved","Ongoing","Completed","Delayed","Suspended"];
+const mk=r=>({id:r[0],name:r[1],pillar:r[2],state:r[3],district:r[4],status:r[5],year:+r[6],budget:+r[7],spent:+r[8],target:+r[9],actual:+r[10],pct:+r[11],mgr:r[12],partners:r[13],start:r[14],end:r[15]});
+let D=R.map(mk);
+function csvParse(t){const o=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";if(r.some(x=>x.trim()))o.push(r);r=[]}else c+=ch}
+r.push(c);if(r.some(x=>x.trim()))o.push(r);return o}
+function fromSheet(t){const rows=csvParse(t).slice(1),ok=[],errs=[];
+rows.forEach((r,i)=>{const n=i+2,e=[];r=r.map(x=>x.trim());
+if(!r[0])e.push("missing ID");if(!P.includes(r[2]))e.push(`pillar "${r[2]}" is not one of the four pillars`);if(!STAT.includes(r[5]))e.push(`status "${r[5]}" is not valid`);
+[6,7,8,9,10,11].forEach(k=>{if(r[k]===""||isNaN(+r[k]))e.push(`column ${k+1} must be a number`)});
+if(e.length)errs.push(`Row ${n} (${r[0]||"no ID"}): ${e.join("; ")}`);else ok.push(mk(r))});return{ok,errs}}
+function fillStates(){const v=fl.value;fl.length=1;[...new Set(D.map(d=>d.state))].sort().forEach(s=>fl.add(new Option(s)));fl.value=v}
+async function loadSheet(){if(!SHEET_URL){msg.innerHTML=`<div class="alert warning"><div><b>Showing sample data</b><br><span style="color:var(--mute)">Add your Google Sheet link to SHEET_URL in this file to show your own projects.</span></div></div>`;fillStates();return}
+try{const res=await fetch(SHEET_URL+(SHEET_URL.includes("?")?"&":"?")+"t="+Date.now());if(!res.ok)throw new Error("HTTP "+res.status);const{ok,errs}=fromSheet(await res.text());
+D=ok;msg.innerHTML=errs.length?`<div class="alert critical"><div><b>${errs.length} row(s) skipped. Fix them in the sheet, then refresh.</b><br><span style="color:var(--mute)">${errs.slice(0,6).join("<br>")}</span></div></div>`:"";
+if(!ok.length)msg.innerHTML+=`<div class="alert critical"><div><b>No valid projects found</b><br><span style="color:var(--mute)">Check the sheet has the same columns as the template.</span></div></div>`}
+catch(e){msg.innerHTML=`<div class="alert critical"><div><b>Could not load the Google Sheet</b><br><span style="color:var(--mute)">Check that it is published to the web as CSV and the link is correct. Showing sample data instead.</span></div></div>`}
+fillStates();render()}
+const F=()=>D.filter(d=>(!fy.value||d.year==fy.value)&&(!fs.value||d.status==fs.value)&&(!fp.value||d.pillar==fp.value)&&(!fl.value||d.state==fl.value));
+const sum=(a,k)=>a.reduce((t,x)=>t+x[k],0),fm=n=>"RM "+(n>=1000?(n/1000).toFixed(2)+"M":n+"k"),fn=n=>n.toLocaleString("en-MY");
+const kpi=(l,v,s="")=>`<div class="card kpi"><small>${l}</small><b>${v}</b><i>${s}</i></div>`;
+const prog=(p,c="var(--brand)")=>`<div class="bar"><div style="width:${Math.min(p,100)}%;background:${c}"></div></div>`;
+const hbars=(items)=>items.map(([l,v,max,c,t])=>`<div class="row"><span>${l}</span>${prog(max?v/max*100:0,c)}<span>${t}</span></div>`).join("");
+const donut=(items)=>{let t=items.reduce((a,i)=>a+i[1],0)||1,a=0;const g=items.map(i=>{const s=a;a+=i[1]/t*100;return `${i[2]} ${s}% ${a}%`}).join(",");return `<div class="donut" role="img" aria-label="Doughnut chart" style="background:conic-gradient(${g})"></div><div class="leg">${items.map(i=>`<span><i class="dot" style="background:${i[2]}"></i>${i[0]} ${Math.round(i[1]/t*100)}%</span>`).join("")}</div>`};
+const tag=s=>`<span class="tag s-${s}">${s}</span>`;
+const table=(a)=>`<div class="wrap"><table><thead><tr><th>ID</th><th>Project</th><th>Pillar</th><th>Location</th><th>Status</th><th>Budget</th><th>Spent</th><th>Beneficiaries</th><th>Progress</th></tr></thead><tbody>${a.map(d=>`<tr tabindex="0" onclick="detail('${d.id}')" onkeydown="if(event.key==='Enter')detail('${d.id}')"><td>${d.id}</td><td>${d.name}</td><td><i class="dot" style="background:${pc(d.pillar)}"></i>${d.pillar}</td><td>${d.district}, ${d.state}</td><td>${tag(d.status)}</td><td>${fm(d.budget)}</td><td>${fm(d.spent)}</td><td>${fn(d.actual)} / ${fn(d.target)}</td><td style="min-width:90px">${prog(d.pct,pc(d.pillar))}</td></tr>`).join("")||`<tr><td colspan="9">No projects match these filters. Clear a filter to see more.</td></tr>`}</tbody></table></div>`;
+const alerts=a=>{const o=[];a.forEach(d=>{const u=d.budget?d.spent/d.budget:0;
+if(d.status=="Delayed")o.push(["critical",`${d.name} is delayed`,`${d.id} · ${d.pct}% complete, past planned timeline. Manager: ${d.mgr}.`]);
+if(d.status=="Suspended")o.push(["critical",`${d.name} is suspended`,`${d.id} · needs a management decision to resume or close.`]);
+if(u>1)o.push(["critical",`Budget overrun on ${d.name}`,`${d.id} · spent ${fm(d.spent)} against ${fm(d.budget)} approved.`]);
+else if(d.status=="Ongoing"&&u-d.pct/100>0.12)o.push(["warning",`Spend ahead of progress: ${d.name}`,`${d.id} · ${Math.round(u*100)}% spent, ${d.pct}% complete.`]);
+if(d.status=="Ongoing"&&d.pct>40&&u<0.3)o.push(["warning",`Low budget utilisation: ${d.name}`,`${d.id} · only ${Math.round(u*100)}% of budget used.`]);
+if(d.status=="Ongoing"&&d.end<="2026-12")o.push(["warning",`Deadline approaching: ${d.name}`,`${d.id} · due ${d.end}.`]);
+if(d.status=="Completed"&&d.id=="JC-013")o.push(["warning","Completion report incomplete: "+d.name,`${d.id} · final report and photographs not yet uploaded.`]);
+});if(!o.length)o.push(["normal","All clear","No projects need attention under the current filters."]);return o};
+const alertHTML=a=>alerts(a).map(x=>`<div class="alert ${x[0]}"><div><b>${x[1]}</b><br><span style="color:var(--mute)">${x[2]}</span></div></div>`).join("");
+const pillarStats=(a)=>P.map((p,i)=>{const x=a.filter(d=>d.pillar==p);return{p,i,n:x.length,b:sum(x,"budget"),s:sum(x,"spent"),act:sum(x,"actual"),tg:sum(x,"target")}});
+function mapHTML(a){const m={};a.forEach(d=>{m[d.state]=m[d.state]||{n:0,b:0,p:{}};m[d.state].n++;m[d.state].b+=d.actual;m[d.state].p[d.pillar]=1});
+const all=["Perlis","Kedah","Pulau Pinang","Perak","Kelantan","Terengganu","Pahang","Selangor","WP Kuala Lumpur","Negeri Sembilan","Melaka","Johor","Sabah","Sarawak"];
+return `<div class="map">${all.map(s=>{const v=m[s];const c=v?Math.min(.12+v.n*.22,.85):0;return `<div class="st ${v?"":"low"}" tabindex="0" style="${v?`background:color-mix(in srgb,var(--brand) ${c*100}%,var(--card))`:""}" title="${v?Object.keys(v.p).join(", "):"No projects"}"><span style="${c>.45?"color:#fff":""}">${s}<b>${v?v.n:0}</b>${v?fn(v.b)+" ben.":"Underserved"}</span></div>`}).join("")}</div><p class="note">Schematic state map. Darker = more projects; dashed = no current projects (potential areas for future intervention). Hover for pillars present.</p>`}
+const V={
+exec(){const a=F(),c=s=>a.filter(d=>d.status==s).length,t=sum(a,"budget"),s=sum(a,"spent"),done=a.length?Math.round(c("Completed")/a.length*100):0;
+const parts=new Set(a.flatMap(d=>d.partners.split(", ")));const ps=pillarStats(a);
+return `<div class="grid g4">${kpi("Total projects",a.length,`${c("Ongoing")} ongoing · ${c("Completed")} completed · ${c("Planning")+c("Approved")} upcoming · ${c("Delayed")} delayed`)}${kpi("Beneficiaries reached",fn(sum(a,"actual")),"of "+fn(sum(a,"target"))+" targeted")}${kpi("Approved allocation",fm(t),"Spent "+fm(s))}${kpi("Completion rate",done+"%","projects completed")}${kpi("Partners",parts.size,"organisations involved")}${kpi("States covered",new Set(a.map(d=>d.state)).size,"of 14")}</div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Spend by pillar</h3>${donut(ps.map(x=>[x.p,x.s,PC[x.i]]))}</div>
+<div class="card"><h3>Budget utilisation by pillar</h3>${hbars(ps.map(x=>[x.p.split(",")[0],x.s,x.b,PC[x.i],x.b?Math.round(x.s/x.b*100)+"%":"–"]))}<h3 style="margin-top:20px">Programme progress</h3>${hbars(["Ongoing","Completed","Delayed","Planning","Approved","Suspended"].map(s=>[s,c(s),a.length,"var(--brand)",c(s)]))}</div></div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Where projects are</h3>${mapHTML(a)}</div><div class="card"><h3>Needs attention</h3>${alertHTML(a).split('</div></div>').slice(0,4).join('</div></div>')}</div></div>
+<div class="card" style="margin-top:14px"><h3>Impact indicators</h3><div class="grid g4">${kpi("Students supported",fn(sum(a.filter(d=>d.pillar=="Education"),"actual")),"output")}${kpi("Heritage visitors & participants",fn(sum(a.filter(d=>d.pillar==P[1]),"actual")),"output")}${kpi("Trees & seedlings planted",fn(31000),"output · 82% survival at 12 months (outcome)")}${kpi("Households assisted",fn(sum(a.filter(d=>d.pillar==P[3]),"actual")),"output")}</div></div>`},
+dir(){const a=F();return `<div class="card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px"><h3>${a.length} projects</h3><button class="btn pri" onclick="alert('Project creation form would open here. Connect to your database to save records.')">+ New project</button></div>${table(a)}</div><div id="det"></div>`},
+pillars(){const a=F(),ps=pillarStats(a);const sel=window.pl||0;const x=ps[sel],pa=a.filter(d=>d.pillar==x.p);
+return `<div class="filters" style="margin-bottom:14px">${P.map((p,i)=>`<button class="btn ${i==sel?"pri":""}" onclick="pl=${i};render()">${p}</button>`).join("")}</div>
+<div class="grid g4">${kpi("Projects",x.n)}${kpi("Beneficiaries",fn(x.act),"target "+fn(x.tg))}${kpi("Allocation",fm(x.b),"spent "+fm(x.s))}${kpi("Avg progress",pa.length?Math.round(sum(pa,"pct")/pa.length)+"%":"–")}</div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Progress by project</h3>${hbars(pa.map(d=>[d.name.slice(0,18),d.pct,100,PC[x.i],d.pct+"%"]))}</div><div class="card"><h3>Impact assessment</h3><p><b>Outputs:</b> ${PO[sel][0]}</p><p><b>Outcomes:</b> ${PO[sel][1]}</p><p><b>Long-term impact:</b> ${PO[sel][2]}</p></div></div>
+<div class="card" style="margin-top:14px"><h3>Projects</h3>${table(pa)}</div>`},
+fin(){const a=F(),t=sum(a,"budget"),s=sum(a,"spent"),ps=pillarStats(a);const yrs=[2024,2025,2026];const mx=Math.max(...yrs.map(y=>sum(D.filter(d=>d.year==y),"budget")),1);
+return `<div class="grid g4">${kpi("Approved allocation",fm(t))}${kpi("Actual expenditure",fm(s))}${kpi("Remaining balance",fm(t-s))}${kpi("Utilisation",t?Math.round(s/t*100)+"%":"–")}</div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Expenditure by pillar</h3>${donut(ps.map(x=>[x.p,x.s,PC[x.i]]))}</div>
+<div class="card"><h3>Year-on-year: allocation vs expenditure</h3><div class="cols">${yrs.map(y=>{const x=D.filter(d=>d.year==y);return `<div><div class="pair"><i style="height:${sum(x,"budget")/mx*100}%;background:var(--brand)"></i><i style="height:${sum(x,"spent")/mx*100}%;background:var(--her)"></i></div>${y}</div>`}).join("")}</div><div class="leg"><span><i class="dot" style="background:var(--brand)"></i>Allocation</span><span><i class="dot" style="background:var(--her)"></i>Expenditure</span></div></div></div>
+<div class="card" style="margin-top:14px"><h3>Expenditure by project</h3>${hbars(a.map(d=>[d.name.slice(0,18),d.spent,d.budget,d.spent>d.budget?"var(--crit)":pc(d.pillar),Math.round(d.spent/d.budget*100)+"%"]))}</div>`},
+impact(){const a=F();const eff=a.filter(d=>d.target);
+return `<div class="card" style="margin-bottom:14px"><h3>Reading these numbers</h3><p style="margin:0">Beneficiary counts are <b>outputs</b>: they show reach, not change. Impact needs outcome evidence such as before-and-after assessments, feedback and follow-up surveys. The table below shows both, and flags where evidence is still missing.</p></div>
+<div class="grid g2"><div class="card"><h3>Target vs actual beneficiaries</h3>${hbars(eff.map(d=>[d.name.slice(0,18),d.actual,d.target,pc(d.pillar),Math.round(d.actual/d.target*100)+"%"]))}</div>
+<div class="card"><h3>Output → outcome → impact</h3><div class="wrap"><table><tr><th>Project</th><th>Satisfaction</th><th>Outcome evidence</th><th>SROI</th></tr>${a.filter(d=>d.status=="Completed"||d.pct>60).map((d,i)=>{const h=d.id.charCodeAt(5)%3;return `<tr><td>${d.name.slice(0,22)}</td><td>${(4+((d.pct+i)%10)/10).toFixed(1)}/5</td><td>${["Before/after assessed","Follow-up survey pending","Baseline only"][h]}</td><td>${h==0?"1 : "+(1.8+i%5/4).toFixed(1):"Insufficient data"}</td></tr>`}).join("")}</table></div></div></div>
+<div class="card" style="margin-top:14px"><h3>Direct vs indirect beneficiaries (estimate)</h3>${hbars([["Direct",sum(a,"actual"),sum(a,"actual")*4.2,"var(--brand)",fn(sum(a,"actual"))],["Indirect (families, communities)",Math.round(sum(a,"actual")*3.2),sum(a,"actual")*4.2,"var(--her)",fn(Math.round(sum(a,"actual")*3.2))]])}</div>`},
+map(){const a=F();const g={};a.forEach(d=>{(g[d.state]=g[d.state]||[]).push(d)});
+return `<div class="card"><h3>Projects by state</h3>${mapHTML(a)}</div><div class="card" style="margin-top:14px"><h3>States and districts</h3><div class="wrap"><table><tr><th>State</th><th>Districts</th><th>Projects</th><th>Beneficiaries</th></tr>${Object.keys(g).sort().map(s=>`<tr><td>${s}</td><td>${[...new Set(g[s].map(d=>d.district))].join(", ")}</td><td>${g[s].length}</td><td>${fn(sum(g[s],"actual"))}</td></tr>`).join("")}</table></div><p class="note">Underserved candidates: Perlis, Negeri Sembilan, Terengganu (single project), WP Kuala Lumpur.</p></div>`},
+rep(){const a=F();const rs=["Monthly project performance","Quarterly progress","Annual impact","Pillar performance","Financial utilisation","Project completion","Beneficiary impact summary"];
+return `<div class="grid g2">${rs.map(r=>`<div class="card"><h3>${r} report</h3><p style="color:var(--mute);margin:0 0 12px">Covers ${a.length} projects under current filters.</p><button class="btn" onclick="window.print()">Export PDF</button> <button class="btn" onclick="csv('${r}')">Export Excel</button></div>`).join("")}</div>`},
+alerts(){const a=F();return `<div style="margin-bottom:12px;display:flex;gap:16px"><span><i class="dot" style="background:var(--ok)"></i>Normal</span><span><i class="dot" style="background:var(--warn)"></i>Warning</span><span><i class="dot" style="background:var(--crit)"></i>Critical</span></div>${alertHTML(a)}`}};
+const PO=[["Scholarships awarded, schools reached, training hours delivered.","Higher attendance, improved results, certification and job placement rates.","Greater household income and educational mobility over 3–5 years."],["Workshops, exhibitions and restoration works completed.","More practising artisans, sustained visitor numbers, documented traditions.","Cultural continuity and stronger local identity."],["Trees planted, waste collected, volunteers mobilised.","Survival rates, recycling volumes, hectares restored.","Measurable biodiversity and carbon benefits."],["Households assisted, aid distributed, clinics held.","Improved health checks, income and housing conditions.","Greater community resilience and quality of life."]];
+function detail(id){const d=D.find(x=>x.id==id);const m=["Planning","Approval","Mobilisation","Delivery","Review","Closure"];const done=Math.floor(d.pct/100*6+(d.pct==100?0:0));
+const u=d.budget?Math.round(d.spent/d.budget*100):0;
+document.getElementById("det").innerHTML=`<div class="card" style="margin-top:14px"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><h3>${d.id} · ${d.name}</h3>${tag(d.status)}</div>
+<p style="color:var(--mute)">${d.pillar} · ${d.district}, ${d.state} · ${d.start} to ${d.end} · Manager ${d.mgr} · Partners: ${d.partners}</p>
+<div class="grid g2"><div><b>Milestones</b><div class="ms">${m.map((x,i)=>`<div class="${i<done?"d":i==done?"n":""}">${x}</div>`).join("")}</div><b>Completion ${d.pct}%</b>${prog(d.pct,pc(d.pillar))}<p><b>Beneficiaries:</b> ${fn(d.actual)} of ${fn(d.target)}</p>${prog(d.target?d.actual/d.target*100:0,pc(d.pillar))}</div>
+<div><b>Budget utilisation ${u}%</b>${prog(u,u>100?"var(--crit)":"var(--brand)")}<p>${fm(d.spent)} spent of ${fm(d.budget)} approved</p><b>Challenges & recommendations</b><p style="margin:4px 0 0">${d.status=="Delayed"?"Supplier and access delays. Recommend revised timeline and weekly check-ins.":d.status=="Suspended"?"Awaiting stakeholder approval. Recommend management review.":"On track. Continue monthly reporting."}</p></div></div></div>`;
+document.getElementById("det").scrollIntoView({behavior:"smooth"})}
+function csv(n){const a=F();const rows=[["ID","Project","Pillar","State","Status","Budget (RM k)","Spent (RM k)","Target","Actual","Progress %"],...a.map(d=>[d.id,d.name,d.pillar,d.state,d.status,d.budget,d.spent,d.target,d.actual,d.pct])];
+const b=new Blob([rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n")],{type:"text/csv"});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=n.replace(/ /g,"-")+".csv";l.click()}
+const NAV=[["exec","▦","Executive Dashboard","Foundation performance at a glance"],["dir","☰","Project Directory","All projects, searchable by status and pillar"],["pillars","◈","Four Strategic Pillars","Dedicated KPIs and impact by pillar"],["fin","RM","Financial Monitoring","Allocation, expenditure and balance"],["impact","✦","Beneficiary & Impact","Outputs, outcomes and long-term impact"],["map","⌖","Geographical Intelligence","Project distribution across Malaysia"],["rep","⎙","Reports & Analytics","Export management reports"],["alerts","⚑","Alerts & Notifications","Items needing attention"]];
+let cur="exec";
+menu.innerHTML=NAV.map(n=>`<button data-v="${n[0]}" onclick="go('${n[0]}')"><span class="ic">${n[1]}</span><span class="lbl">${n[2]}</span></button>`).join("");
+function go(v){cur=v;nav.classList.remove("open");render()}
+function render(){const n=NAV.find(x=>x[0]==cur);title.textContent=n[2];sub.textContent=n[3];document.querySelectorAll("nav [data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v==cur));view.innerHTML=V[cur]()}
+[fy,fs,fp,fl].forEach(e=>e.onchange=render);
+const mq=matchMedia("(max-width:760px)");const bg=()=>burger.style.display=mq.matches?"inline-block":"none";mq.onchange=bg;bg();
+render();
+loadSheet();
+</script></body></html>
